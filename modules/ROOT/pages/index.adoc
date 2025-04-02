@@ -1,3 +1,105 @@
-= 主页
+= PeerJS库
 
-这里是主页
+PeerJS简化了WebRTC点对点数据、视频和音频通话。
+
+PeerJS包装了浏览器的WebRTC实现，提供了一个完整、可配置且易于使用的点对点连接API。只需一个ID，对等方就可以与远程对等方建立P2P数据或媒体流连接。
+
+下载: link:{client_cdn_url}[稳定版（1.5.4）,window=_blank]
+
+== 设置
+
+=== 引入script库
+
+----
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+----
+
+=== 或使用ESM
+
+----
+<script type="module">
+  import {Peer} from "https://esm.sh/peerjs@1.5.4?bundle-deps"
+</script>
+----
+
+=== 创建一个peer
+
+----
+var peer = new Peer();
+----
+
+== 数据连接
+
+=== 发起连接
+
+----
+var conn = peer.connect('another-peers-id');
+// 当您成功连接到PeerServer时，将启动on open
+conn.on('open', function(){
+    // 在这里你有conn.id
+    conn.send('hi!');
+});
+----
+
+=== 接收连接
+
+----
+peer.on('connection', function(conn) {
+    conn.on('data', function(data){
+        // 将打印'hi!'
+        console.log(data);
+    });
+});
+----
+
+== 媒体通话
+
+=== 呼叫
+
+----
+var getUserMedia = navigator.getUserMedia
+    || navigator.webkitGetUserMedia
+    || navigator.mozGetUserMedia;
+getUserMedia({video: true, audio: true}, function(stream) {
+  var call = peer.call('another-peers-id', stream);
+  call.on('stream', function(remoteStream) {
+    // 在某些视频/画布元素中显示流。
+  });
+}, function(err) {
+  console.log('无法获取本地流' ,err);
+});
+----
+
+=== 接听
+
+----
+var getUserMedia = navigator.getUserMedia
+    || navigator.webkitGetUserMedia
+    || navigator.mozGetUserMedia;
+peer.on('call', function(call) {
+  getUserMedia({video: true, audio: true}, function(stream) {
+    call.answer(stream); // 用A/V流接听电话。
+    call.on('stream', function(remoteStream) {
+      // 在某些视频/画布元素中显示流。
+    });
+  }, function(err) {
+    console.log('无法获取本地流' ,err);
+  });
+});
+----
+
+== Peer服务器
+
+为了促成连接，PeerJS连接到PeerServer。请注意，没有点对点数据会通过服务器；服务器仅作为连接的中介。
+
+=== Peer云服务器
+
+如果您不想运行自己的PeerServer，我们提供免费的PeerServer云托管版本。xref:peerserver_cloud.adoc[官方PeerServer！]
+
+=== 运行您自己的
+
+link:{server_gh_url}[PeerServer是开源的]，用node.js编写。您可以轻松运行自己的。
+
+== 问题？
+
+请在 link:{client_gh_url}/issues[Github问题页面] 上报告您发现的任何错误。

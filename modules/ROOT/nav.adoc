@@ -1,1 +1,7 @@
-* xref:1918.adoc[列宁在1918]
+* xref:index.adoc[主页]
+* xref:get_started.adoc[快速开始]
+* xref:api_reference.adoc[API参考手册]
+* xref:examples.adoc[示例]
+* xref:peerserver_cloud.adoc[peer云服务器]
+* link:https://status.peerjs.com/[状态页,window=_blank]
+* xref:team.adoc[团队]

@@ -1,0 +1,164 @@
+= PeerJS
+
+PeerJS简化了 peer-to-peer(对等网络) 数据、视频和音频通话。
+
+本指南将向您介绍PeerJS API的基本概念。
+
+== 配置
+
+=== 1. 引入Javascript客户端
+
+将PeerJS客户端库添加到您的网页中。
+
+----
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+----
+
+如果您喜欢，可以自己托管它：link:{client_cdn_url}[peerjs.min.js]，或者 link:{client_gh_url}[在Github上给我们一个fork]。
+
+=== 2. 创建Peer对象
+
+Peer对象是我们创建和接收连接的地方。
+
+----
+var peer = new Peer();
+----
+
+PeerJS使用PeerServer来处理会话元数据和候选者信令。如果您不喜欢云服务器，也可以运行自己的 link:{server_gh_url}[PeerServer]。
+
+我们现在已准备好开始建立连接！
+
+== 用法
+
+每个Peer对象在创建时都会被分配一个随机且唯一的ID。
+
+----
+peer.on('open', function(id) {
+    console.log('My peer ID is: ' + id);
+});
+----
+
+当我们要连接到另一个peer时，我们需要知道他们的peer id。您负责在您的网站用户之间传递peer ID。可选地，您可以将自己的ID传递给Peer构造函数。
+
+阅读Peer API参考以获取有关其选项、方法、事件和错误处理的完整信息。
+
+=== 数据连接
+
+通过调用 `peer.connect` 并传入目标peer的peer ID来启动数据连接。每当另一个peer尝试连接到您的peer ID时，您都会收到一个 `connection` 事件。
+
+[%autowidth]
+|===
+|启动连接 a|
+----
+var conn = peer.connect('dest-peer-id');
+----
+|接收连接 a|
+----
+peer.on('connection', function(conn) { ... });
+----
+|===
+
+`peer.connect` 和 `connection` 事件的回调都会提供一个 `DataConnection` 对象。此对象将允许您发送和接收数据：
+
+----
+conn.on('open', function() {
+    // 接收消息
+    conn.on('data', function(data) {
+        console.log('Received', data);
+    });
+    // 发送消息
+    conn.send('Hello!');
+});
+----
+
+阅读DataConnection API参考以获取有关其方法和事件的完整详细信息。
+
+=== 视频/音频通话
+
+通过调用 `peer.call` 并传入目标peer的peer ID来呼叫另一个peer。当peer呼叫您时，会发出call事件。
+
+与数据连接不同，在接收到 `call` 事件时，必须接听呼叫，否则不会建立连接。
+
+[%autowidth]
+|===
+|开始呼叫 a|
+[source]
+----
+// 呼叫peer，提供我们的mediaStream
+var call = peer.call('dest-peer-id', mediaStream);
+----
+|接听呼叫 a|
+[source]
+----
+peer.on('call', function(call) {
+    // 接听呼叫，提供我们的mediaStream
+    call.answer(mediaStream);
+});
+----
+|===
+
+在呼叫或接听呼叫时，应提供MediaStream。MediaStream表示本地视频（摄像头）或音频流，并可以通过某些（特定于浏览器的）版本的 link:{moz_getUserMedia_url}[navigator.getUserMedia]获得。在接听呼叫时，MediaStream是可选的，如果没有提供，则会建立单向呼叫。一旦呼叫建立，其 `open` 属性将设置为true。
+
+`peer.call` 和 `call` 事件的回调提供了一个MediaConnection对象。MediaConnection对象本身会发出一个 `stream` 事件，其回调包含另一个peer的视频/音频流。
+
+----
+call.on('stream', function(stream) {
+    // `stream` 是远程peer的MediaStream。
+    // 您可以在这里将其添加到HTML视频/canvas元素中。
+});
+----
+
+阅读MediaConnection API参考以获取有关其方法和事件的完整详细信息。
+
+== 常见问题
+
+=== 我可以发送什么类型的数据？
+
+PeerJS内置了BinaryPack序列化格式。这意味着您可以发送任何JSON类型以及二进制Blobs和ArrayBuffers。只需发送任意数据，您就可以在另一端接收到它：
+
+----
+conn.send({
+    strings: 'hi!',
+    numbers: 150,
+    arrays: [1,2,3],
+    evenBinary: new Blob([1,2,3]),
+    andMore: {bool: true}
+});
+----
+
+=== 有什么需要注意的吗？
+
+一小部分用户处于对称NAT之后。当两个对称NAT用户尝试相互连接时，NAT遍历是不可能的，无法建立连接。一种解决方法是通过TURN服务器进行连接代理。PeerServer云服务提供了一个免费的TURN服务器。这将使您的PeerJS应用程序能够无缝地处理这种情况
+
+=== 我如何使用TURN服务器？
+
+在创建Peer对象时，将ICE服务器作为选项哈希的config键传递。
+
+----
+var peer = new Peer({
+    config: {'iceServers': [
+        { url: 'stun:stun.l.google.com:19302' },
+        { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' }
+    ]} /* 示例服务器，请使用适当的服务器 */
+});
+----
+
+=== 如果我尝试连接到尚未连接到服务器的peer会怎样？
+
+当您尝试连接到peer时，PeerServer将最多保留5秒钟的连接报价，然后拒绝它。这对于您想要在网页之间快速断开和重新连接时重新连接到peer很有用。
+
+=== 为什么我无法连接？
+
+您可能处于对称NAT之后，在这种情况下，您需要设置TURN服务器。
+
+另一个可能的问题是您的网络阻止了运行PeerServer云服务的443端口。在这种情况下，您必须使用在适当端口上运行的自己的PeerServer，而不是云服务。
+
+=== 关于延迟/带宽怎么样？
+
+在两个peer之间发送的数据不会触及任何其他服务器，因此连接速度仅受两个peer的上传和下载速率的限制。这也意味着您没有中间服务器的额外延迟。
+
+建立连接的延迟可以分为两个部分：数据的代理和客户端的标识。PeerJS已被设计为最小化您在这两个领域花费的时间。对于代理，数据会通过XHR流式请求发送，然后建立WebSocket连接，之后通过WebSocket发送。对于客户端标识，我们为您提供传入自己的peer ID的能力，从而消除了从服务器检索ID的往返时间。
+
+=== 还有问题吗？
+
+link:https://t.me/joinchat/ENhPuhTvhm8WlIxTjQf7Og[在我们的Telegram频道上讨论PeerJS]。

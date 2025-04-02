@@ -1,0 +1,578 @@
+= API 参考手册
+
+[[peer]]
+== Peer `CONSTRUCTOR`
+
+----
+const peer = new Peer([id], [options]);
+----
+
+一个peer可以连接到其他peer并监听连接。
+
+[[peer-id]]
+=== id `STRING`
+
+其他peer可以使用提供的ID连接到此peer。如果没有提供ID，将由中介服务器生成一个。ID必须以字母数字字符（小写或大写字母或数字）开头和结尾。 在ID的中间，允许使用短横线（-）和下划线（_）。
+
+IMPORTANT: 不建议您使用此ID来标识peer，因为它仅用于中介连接。建议您设置 <<peerconnect-options,metadata>>选项以发送其他标识信息。
+
+[[peer-options]]
+=== options `OBJECT`
+
+[[peer-options-key]]
+==== key `STRING`
+
+Peer云服务器的API密钥。这仅用于 `0.peerjs.com` 以外的服务器。
+
+IMPORTANT: Peer云服务器在端口443上运行。请确保它没有被阻塞，或者考虑运行您自己的Peer服务器。
+
+[[peer-options-host]]
+==== host `STRING`
+
+服务器主机。默认为 `0.peerjs.com`。也接受 ``'/'`` 来表示相对主机名。
+
+[[peer-options-port]]
+==== port `NUMBER`
+
+服务器端口。默认为 `443`。
+
+[[peer-options-pinginterval]]
+==== pingInterval `NUMBER`
+
+Ping间隔（毫秒）。默认为 `5000`。
+
+[[peer-options-path]]
+==== path `STRING`
+
+您自托管的PeerServer运行的路径。默认为 ``'/'``。
+
+[[peer-options-secure]]
+==== secure `BOOLEAN`
+
+如果使用SSL，则为 `true`。
+
+NOTE: 请注意，我们的云托管服务器和资产可能不支持SSL。
+
+[[peer-options-config]]
+==== config `OBJECT`
+
+传递给RTCPeerConnection的配置哈希。此哈希包含任何自定义ICE/TURN服务器配置。默认为 ``{ 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' }``
+
+[[peer-options-debug]]
+==== debug `NUMBER`
+
+根据传递的调试级别打印日志消息。默认为 `0`。
+
+* 0 不打印日志。
+* 1 仅打印错误。
+* 2 打印错误和警告。
+* 3 打印所有日志。
+
+[[peerconnect]]
+== peer.connect `METHOD`
+
+----
+const dataConnection = peer.connect(id, [options]);
+----
+
+连接到由 `id` 指定的远程对等方，并返回一个数据连接。请务必监听 <<peeron-error,error>> 事件，以防连接失败。
+
+[[peerconnect-id]]
+=== id `STRING`
+
+远程对等方的中介ID（他们的 <<peerid,peer.id>>）。
+
+[[peerconnect-options]]
+=== options `OBJECT`
+
+[[peerconnect-options-label]]
+==== label `STRING`
+
+您希望通过其唯一标识此数据连接的标签。如果未指定，将随机生成一个标签。可以通过 <<dataconnection-label,dataConnection.label>> 访问。
+
+[[peerconnect-options-metadata]]
+==== metadata
+
+与连接关联的元数据，由发起连接的一方传入。可以通过 <<peerconnect-options-metadata,dataConnection.metadata>>访问。可以是任何可序列化的类型。
+
+[[peerconnect-options-serialization]]
+==== serialization `STRING`
+
+可以是 `binary`（默认）、`binary-utf8`、`json` 或 `none`。可以通过 <<peerconnect-serialization,dataConnection.serialization>>访问。
+
+NOTE: `binary-utf8` 会因为UTF8字符串打包成二进制格式的方式而影响性能。
+
+[[peerconnect-options-reliable]]
+==== reliable `BOOLEAN`
+
+基础数据通道是否应该可靠（例如，用于大文件传输）或不可靠（例如，用于游戏或流媒体）。默认为 `false`。
+
+IMPORTANT: 将reliable设置为true将仅为不兼容的浏览器（仅限Chrome 30及以下版本）使用shim，因此可能无法提供完整性能。
+
+[[peercall]]
+== peer.call `METHOD`
+
+----
+const mediaConnection = peer.call(id, stream, [options]);
+----
+
+调用由 `id` 指定的远程对等方，并返回一个媒体连接。如果连接失败，请务必监听 <<peeron-error,error>>事件。
+
+[[peercall-id]]
+=== id `STRING`
+
+远程对等方的中介ID（即他们的 <<peerid,peer.id>>）。
+
+[[peercall-stream]]
+=== stream `MEDIASTREAM`
+
+呼叫者的媒体流
+
+[[peercall-options]]
+=== options `OBJECT`
+
+[[peercall-options-metadata]]
+==== metadata
+
+与连接相关的元数据，由发起连接的人传入。可以通过 <<mediaconnection-metadata,mediaConnection.metadata>>访问。可以是任何可序列化的类型。
+
+[[peercall-options-sdptransform]]
+==== sdpTransform `METHOD`
+
+在创建offer之前运行的函数，用于修改sdp offer消息。
+
+[[peeron]]
+== peer.on `METHOD`
+
+----
+peer.on(event, callback);
+----
+
+设置peer事件的监听器。
+
+[[peeron-event]]
+=== 'open' `EVENT`
+
+----
+peer.on('open', function(id) { ... });
+----
+
+当与PeerServer建立连接时触发。您可以在此事件触发之前使用peer，但发送给服务器的消息将被排队。`id` 是peer的中介ID（在构造函数中提供或由服务器分配）。
+
+NOTE: 如果连接速度很重要，您不应在连接到其他peer之前等待此事件。
+
+[[peeron-connection]]
+=== 'connection' `EVENT`
+
+----
+peer.on('connection', function(dataConnection) { ... });
+----
+
+当与远程peer建立新的数据连接时触发。
+
+[[peeron-call]]
+=== 'call' `EVENT`
+
+----
+peer.on('call', function(mediaConnection) { ... });
+----
+
+当远程peer尝试呼叫您时触发。触发时传入的 `mediaConnection` 尚未激活；您必须先接听呼叫（`<<mediaconnection-answer,mediaConnection.answer([stream]>>`);）。然后，您可以监听 `<<mediaconnection-on,stream>>` 事件。
+
+[[peeron-close]]
+=== 'close' `EVENT`
+
+----
+peer.on('close', function() { ... });
+----
+
+当peer被 `<<peerdestroy,destroyed>>` 且无法再接受或创建任何新连接时触发。此时，peer的所有连接都将被关闭。
+
+NOTE: 为确保peer正确清理，我们建议在不再需要peer时调用 `peer.destroy()`。
+
+[[peeron-disconnected]]
+=== 'disconnected' `EVENT`
+
+----
+peer.on('disconnected', function() { ... });
+----
+
+当peer与信令服务器断开连接时触发，可能是 <<peerdisconnect,手动断开连接>>，也可能是因为与信令服务器的连接丢失。当peer断开连接时，其现有连接将保持活动状态，但peer无法接受或创建任何新连接。您可以通过调用 `<<peerreconnect,peer.reconnect()>>`重新连接到服务器。
+
+[[peeron-error]]
+=== 'error' `EVENT`
+
+----
+peer.on('error', function(err) { ... });
+----
+
+peer上的错误**几乎总是致命的**，并将销毁peer。来自底层socket和PeerConnections的错误将转发到此处。
+
+这些错误具有以下 `err.type` 类型：
+
+[[peeron-error-browser-incompatible]]
+==== 'browser-incompatible' `ERROR` `FATAL`
+
+客户端的浏览器不支持您尝试使用的某些或所有WebRTC功能。
+
+[[peeron-error-disconnected]]
+==== 'disconnected' `ERROR`
+
+您已经将此peer从服务器断开连接，并且无法再在其上建立任何新连接。
+
+[[peeron-error-invalid-id]]
+==== 'invalid-id' `ERROR` `FATAL`
+
+传递给Peer构造函数的ID包含非法字符。
+
+[[peeron-error-invalid-key]]
+==== 'invalid-key' `ERROR` `FATAL`
+
+传递给Peer构造函数的API密钥包含非法字符或不在系统中（仅限云服务器）。
+
+[[peeron-error-network]]
+==== 'network' `ERROR`
+
+无法建立到信令服务器的连接或连接丢失。
+
+[[peeron-error-peer-unavailable]]
+==== 'peer-unavailable' `ERROR`
+
+您尝试连接的peer不存在。
+
+[[peeron-error-ssl-unavailable]]
+==== 'ssl-unavailable' `ERROR` `FATAL`
+
+正在安全地使用PeerJS，但云服务器不支持SSL。请使用自定义PeerServer。
+
+[[peeron-error-server-error]]
+==== 'server-error' `ERROR` `FATAL`
+
+无法到达服务器。
+
+[[peeron-error-socket-error]]
+==== 'socket-error' `ERROR` `FATAL`
+
+来自底层套接字的错误。
+
+[[peeron-error-socket-closed]]
+==== 'socket-closed' `ERROR` `FATAL`
+
+底层套接字意外关闭。
+
+[[peeron-error-unavailable-id]]
+==== 'unavailable-id' `ERROR` `SOMETIMES FATAL`
+
+传递给Peer构造函数的ID已被占用。
+
+IMPORTANT: 如果您的peer具有开放的peer-to-peer连接，则此错误不是致命的。这可能在您尝试<<peerreconnect,重新连接>>已 <<peerdisconnect,从服务器断开的>>peer时发生，但其旧ID现在已被占用。
+
+[[peeron-error-webrtc]]
+==== 'webrtc' `ERROR`
+
+原生的WebRTC错误。
+
+[[peerdisconnect]]
+== peer.disconnect `METHOD`
+
+----
+peer.disconnect();
+----
+
+关闭与服务器的连接，同时保留所有现有的数据和媒体连接。<<peerdisconnected,peer.disconnected>> 将被设置为 `true`，并触发 <<peeron-disconnected,disconnected>> 事件。
+
+IMPORTANT: 此操作不可撤销；相应的对等体对象将不再能够创建或接收任何连接，并且在（云）服务器上，其 ID 将被放弃。
+
+[[peerreconnect]]
+== peer.reconnect `METHOD`
+
+----
+peer.reconnect();
+----
+
+尝试使用对等方的旧ID重新连接到服务器。只有<<peerdisconnect,已断开的peers>>才能重新连接。已销毁的对等方无法重新连接。如果连接失败（例如，如果对等方的旧ID现在已被占用），对等方的现有连接不会关闭，但会触发任何相关的错误事件。
+
+[[peerdestroy]]
+== peer.destroy `METHOD`
+
+----
+peer.destroy();
+----
+
+关闭与服务器的连接并终止所有现有连接。<<peerdestroyed,peer.destroyed>>将被设置为 `true`。
+
+IMPORTANT: 此操作不可撤销；相应的对等对象将不再能够创建或接收任何连接，其在（云）服务器上的ID将被没收，并且其所有数据和媒体连接都将被关闭。
+
+[[peerid]]
+== peer.id `STRING`
+
+此对等的代理ID。如果在 <<peer,构造函数>> 中没有指定ID，则在发出``<<peeron-open,open>>``事件之前，此ID将为``undefined``。
+
+[[peerconnections]]
+== peer.connections `OBJECT`
+
+与此对等关联的所有连接的哈希表，以远程对等的ID为键。
+
+NOTE: 我们建议您自己跟踪连接，而不是依赖此哈希表。
+
+[[peerdisconnected]]
+== peer.disconnected `BOOLEAN`
+
+如果与PeerServer存在活动连接，则为``false``。
+
+[[peerdestroyed]]
+== peer.destroyed `BOOLEAN`
+
+如果此对等及其所有连接都不再可用，则为``true``。
+
+[[dataconnection]]
+== DataConnection `CLASS`
+
+封装了WebRTC的DataChannel。要获取一个DataConnection对象，请使用<<peerconnect,peer.connect>>或监听<<peeron-connect,connect>>事件。
+
+[[dataconnection-send]]
+=== .send `METHOD`
+
+----
+dataConnection.send(data);
+----
+
+`data` 默认通过BinaryPack序列化并发送给远程对等方。
+
+[[dataconnection-send-data]]
+==== data
+
+您可以发送任何类型的数据，包括对象、字符串和二进制大对象（blobs）。
+
+[[dataconnection-close]]
+=== .close `METHOD`
+
+----
+dataConnection.close();
+----
+
+优雅地关闭数据连接，清理底层DataChannels和PeerConnections。
+
+[[dataconnection-on]]
+=== .on `METHOD`
+
+----
+dataConnection.on(event, callback);
+----
+
+为数据连接事件设置监听器。
+
+[[dataconnection-on-data]]
+==== 'data' `EVENT`
+
+----
+dataConnection.on('data', function(data) { ... });
+----
+
+当从远程对等方接收到数据时触发。
+
+[[dataconnection-on-open]]
+==== 'open' `EVENT`
+
+----
+dataConnection.on('open', function() { ... });
+----
+
+当连接建立并可以使用时触发。
+
+[[dataconnection-on-close]]
+==== 'close' `EVENT`
+
+----
+dataConnection.on('close', function() { ... });
+----
+
+当您或远程对等方关闭数据连接时触发。
+
+[[dataconnection-on-error]]
+==== 'error' `EVENT`
+
+----
+dataConnection.on('error', function(err) { ... });
+----
+
+[[dataconnection-datachannel]]
+=== .dataChannel `OBJECT`
+
+与连接关联的RTCDataChannel对象的引用。
+
+[[dataconnection-label]]
+=== .label `LABEL`
+
+连接建立时传入或由PeerJS分配的可选标签。
+
+[[dataconnection-metadata]]
+=== .metadata
+
+与连接关联的任何类型的元数据，由发起连接的一方传入。
+
+[[dataconnection-open]]
+=== .open `BOOLEAN`
+
+如果连接已打开并准备好进行读写，则为true。
+
+[[dataconnection-peerconnection]]
+=== .peerConnection `OBJECT`
+
+与连接关联的RTCPeerConnection对象的引用。
+
+[[dataconnection-peer]]
+=== .peer `STRING`
+
+此连接另一端的对等方的ID。
+
+[[dataconnection-reliable]]
+=== .reliable `BOOLEAN`
+
+底层数据通道是否可靠；在连接建立时定义。
+
+[[dataconnection-serialization]]
+=== .serialization `STRING`
+
+通过连接发送的数据的序列化格式。可以是 `binary`（默认）、`binary-utf8`、``json``或``none``。
+
+[[dataconnection-type]]
+=== .type `STRING`
+
+对于数据连接，此值始终为 ``'data'``。
+
+[[dataconnection-buffersize]]
+=== .bufferSize `NUMBER`
+
+当浏览器缓冲区不再满时，排队要发送的消息数量。
+
+[[mediaconnection]]
+== MediaConnection `CLASS`
+
+封装WebRTC的媒体流。要获取一个，请使用<<peercall,peer.call>>或监听<<peeron-call,call>>事件。
+
+[[mediaconnection-answer]]
+=== .answer `METHOD`
+
+----
+mediaConnection.answer([stream],[options]);
+----
+
+当在对等体上接收到<<peeron-call,call>>事件时，可以调用回调提供的媒体连接上的 `.answer` 来接受呼叫，并可选地发送自己的媒体流。
+
+[[mediaconnection-answer-stream]]
+==== stream `MEDIASTREAM`
+
+来自 link:{moz_getUserMedia_url}[getUserMedia]的WebRTC媒体流。
+
+[[mediaconnection-answer-options]]
+==== options `OBJECT`
+
+[[mediaconnection-answer-options-sdptransform]]
+===== sdpTransform `METHOD`
+
+在创建应答之前运行的函数，用于修改sdp应答消息。
+
+[[mediaconnection-close]]
+=== .close `METHOD`
+
+----
+mediaConnection.close();
+----
+
+关闭媒体连接。
+
+[[mediaconnection-on]]
+=== .on `METHOD`
+
+----
+mediaConnection.on(event, callback);
+----
+
+为媒体连接事件设置监听器。
+
+[[mediaconnection-on-stream]]
+==== 'stream' `EVENT`
+
+----
+mediaConnection.on('stream', function(stream) { ... });
+----
+
+当远程对等体添加流时触发。
+
+[[mediaconnection-on-close]]
+==== 'close' `EVENT`
+
+----
+mediaConnection.on('close', function() { ... });
+----
+
+当您或远程对等体关闭媒体连接时触发。
+
+[[mediaconnection-on-error]]
+==== 'error' `EVENT`
+
+----
+mediaConnection.on('error', function(err) { ... });
+----
+
+[[mediaconnection-open]]
+=== .open `BOOLEAN`
+
+表示媒体连接是否处于活动状态（例如，您的呼叫已被接听）。如果您想为一方通话设置最大等待时间，可以检查此状态。
+
+[[mediaconnection-metadata]]
+=== .metadata
+
+与连接相关联的任何类型的元数据，由发起连接的人传递。
+
+[[mediaconnection-peer]]
+=== .peer `STRING`
+
+此连接另一端对等体的ID。
+
+[[mediaconnection-type]]
+=== .type `STRING`
+
+对于媒体连接，此值始终为 `'media'`。
+
+[[util]]
+== util `OBJECT` `UTILITY`
+
+提供多种有用的工具。
+
+IMPORTANT: 仅文档中记录的工具保证存在于``util``中。未记录的工具可能会在不发出警告的情况下被移除。我们并不认为这些是“重大更改”。
+
+=== .browser `STRING`
+
+----
+if (util.browser === 'Firefox') { /* 可以与Firefox对等方对等。 */ }
+----
+
+当前浏览器。`util.browser` 当前可以有以下值：'firefox'、'chrome'、'safari'、'edge'、'不受支持的浏览器。'、'不是浏览器。'（未知的WebRTC兼容代理）。
+
+=== .supports `OBJECT`
+
+----
+if (util.supports.data) { /* 可以启动数据连接。 */ }
+----
+
+WebRTC功能到布尔值的哈希，这些布尔值对应于当前浏览器是否支持该功能。
+
+IMPORTANT: 仅文档中记录的属性保证存在于``util.supports``中。
+
+==== .audioVideo `BOOLEAN`
+
+如果当前浏览器支持媒体流和对等连接，则为true。
+
+==== .data `BOOLEAN`
+
+如果当前浏览器支持DataChannel和对等连接，则为true。
+
+==== .binary `BOOLEAN`
+
+如果当前浏览器支持二进制DataChannels，则为true。
+
+==== .reliable `BOOLEAN`
+
+如果当前浏览器支持可靠DataChannels，则为true。
