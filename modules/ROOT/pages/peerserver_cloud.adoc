@@ -1,0 +1,9 @@
+= PeerServer云服务
+
+如果您不指定“host”和“key”选项，您将自动连接到PeerServer云服务。请注意，您将与其他人共享该服务，如果您手动设置ID，可能会发生ID冲突。
+
+遇到问题？查看我们的 link:https://status.peerjs.com/[状态页面！]
+
+帮助我们保持服务器运行 :)
+
+捐献页面: https://opencollective.com/peer

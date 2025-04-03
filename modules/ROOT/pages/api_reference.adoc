@@ -14,7 +14,7 @@ const peer = new Peer([id], [options]);
 
 其他peer可以使用提供的ID连接到此peer。如果没有提供ID，将由中介服务器生成一个。ID必须以字母数字字符（小写或大写字母或数字）开头和结尾。 在ID的中间，允许使用短横线（-）和下划线（_）。
 
-IMPORTANT: 不建议您使用此ID来标识peer，因为它仅用于中介连接。建议您设置 <<peerconnect-options,metadata>>选项以发送其他标识信息。
+IMPORTANT: 不建议您使用此ID来标识peer，因为它仅用于中介连接。建议您设置 `<<peerconnect-options,metadata>>` 选项以发送其他标识信息。
 
 [[peer-options]]
 === options `OBJECT`
@@ -51,7 +51,7 @@ Ping间隔（毫秒）。默认为 `5000`。
 
 如果使用SSL，则为 `true`。
 
-NOTE: 请注意，我们的云托管服务器和资产可能不支持SSL。
+NOTE: 请注意，我们的云托管服务器和资源可能不支持SSL。
 
 [[peer-options-config]]
 ==== config `OBJECT`
@@ -75,12 +75,12 @@ NOTE: 请注意，我们的云托管服务器和资产可能不支持SSL。
 const dataConnection = peer.connect(id, [options]);
 ----
 
-连接到由 `id` 指定的远程对等方，并返回一个数据连接。请务必监听 <<peeron-error,error>> 事件，以防连接失败。
+连接到由 `id` 指定的远程对等方，并返回一个数据连接。请务必监听 `<<peeron-error,error>>` 事件，以防连接失败。
 
 [[peerconnect-id]]
 === id `STRING`
 
-远程对等方的中介ID（他们的 <<peerid,peer.id>>）。
+远程对等方的中介ID（他们的 `<<peerid,peer.id>>`）。
 
 [[peerconnect-options]]
 === options `OBJECT`
@@ -88,17 +88,17 @@ const dataConnection = peer.connect(id, [options]);
 [[peerconnect-options-label]]
 ==== label `STRING`
 
-您希望通过其唯一标识此数据连接的标签。如果未指定，将随机生成一个标签。可以通过 <<dataconnection-label,dataConnection.label>> 访问。
+您希望通过其唯一标识此数据连接的标签。如果未指定，将随机生成一个标签。可以通过 `<<dataconnection-label,dataConnection.label>>` 访问。
 
 [[peerconnect-options-metadata]]
 ==== metadata
 
-与连接关联的元数据，由发起连接的一方传入。可以通过 <<peerconnect-options-metadata,dataConnection.metadata>>访问。可以是任何可序列化的类型。
+与连接关联的元数据，由发起连接的一方传入。可以通过 `<<peerconnect-options-metadata,dataConnection.metadata>>` 访问。可以是任何可序列化的类型。
 
 [[peerconnect-options-serialization]]
 ==== serialization `STRING`
 
-可以是 `binary`（默认）、`binary-utf8`、`json` 或 `none`。可以通过 <<peerconnect-serialization,dataConnection.serialization>>访问。
+可以是 `binary`（默认）、`binary-utf8`、`json` 或 `none`。可以通过 `<<dataconnection-serialization,dataConnection.serialization>>` 访问。
 
 NOTE: `binary-utf8` 会因为UTF8字符串打包成二进制格式的方式而影响性能。
 
@@ -116,12 +116,12 @@ IMPORTANT: 将reliable设置为true将仅为不兼容的浏览器（仅限Chrome
 const mediaConnection = peer.call(id, stream, [options]);
 ----
 
-调用由 `id` 指定的远程对等方，并返回一个媒体连接。如果连接失败，请务必监听 <<peeron-error,error>>事件。
+调用由 `id` 指定的远程对等方，并返回一个媒体连接。如果连接失败，请务必监听 `<<peeron-error,error>>` 事件。
 
 [[peercall-id]]
 === id `STRING`
 
-远程对等方的中介ID（即他们的 <<peerid,peer.id>>）。
+远程对等方的中介ID（即他们的 `<<peerid,peer.id>>`）。
 
 [[peercall-stream]]
 === stream `MEDIASTREAM`
@@ -134,7 +134,7 @@ const mediaConnection = peer.call(id, stream, [options]);
 [[peercall-options-metadata]]
 ==== metadata
 
-与连接相关的元数据，由发起连接的人传入。可以通过 <<mediaconnection-metadata,mediaConnection.metadata>>访问。可以是任何可序列化的类型。
+与连接相关的元数据，由发起连接的人传入。可以通过 `<<mediaconnection-metadata,mediaConnection.metadata>>` 访问。可以是任何可序列化的类型。
 
 [[peercall-options-sdptransform]]
 ==== sdpTransform `METHOD`
@@ -150,7 +150,7 @@ peer.on(event, callback);
 
 设置peer事件的监听器。
 
-[[peeron-event]]
+[[peeron-open]]
 === 'open' `EVENT`
 
 ----
@@ -265,7 +265,7 @@ peer上的错误**几乎总是致命的**，并将销毁peer。来自底层socke
 
 传递给Peer构造函数的ID已被占用。
 
-IMPORTANT: 如果您的peer具有开放的peer-to-peer连接，则此错误不是致命的。这可能在您尝试<<peerreconnect,重新连接>>已 <<peerdisconnect,从服务器断开的>>peer时发生，但其旧ID现在已被占用。
+IMPORTANT: 如果您的peer具有开放的peer-to-peer连接，则此错误不是致命的。这可能在您尝试<<peerreconnect,重新连接>>已 <<peerdisconnect,从服务器断开的>> peer时发生，但其旧ID现在已被占用。
 
 [[peeron-error-webrtc]]
 ==== 'webrtc' `ERROR`
@@ -279,7 +279,7 @@ IMPORTANT: 如果您的peer具有开放的peer-to-peer连接，则此错误不�
 peer.disconnect();
 ----
 
-关闭与服务器的连接，同时保留所有现有的数据和媒体连接。<<peerdisconnected,peer.disconnected>> 将被设置为 `true`，并触发 <<peeron-disconnected,disconnected>> 事件。
+关闭与服务器的连接，同时保留所有现有的数据和媒体连接。`<<peerdisconnected,peer.disconnected>>` 将被设置为 `true`，并触发 `<<peeron-disconnected,disconnected>>` 事件。
 
 IMPORTANT: 此操作不可撤销；相应的对等体对象将不再能够创建或接收任何连接，并且在（云）服务器上，其 ID 将被放弃。
 
@@ -290,7 +290,7 @@ IMPORTANT: 此操作不可撤销；相应的对等体对象将不再能够创建
 peer.reconnect();
 ----
 
-尝试使用对等方的旧ID重新连接到服务器。只有<<peerdisconnect,已断开的peers>>才能重新连接。已销毁的对等方无法重新连接。如果连接失败（例如，如果对等方的旧ID现在已被占用），对等方的现有连接不会关闭，但会触发任何相关的错误事件。
+尝试使用对等方的旧ID重新连接到服务器。只有 <<peerdisconnect,已断开的peers>> 才能重新连接。已销毁的对等方无法重新连接。如果连接失败（例如，如果对等方的旧ID现在已被占用），对等方的现有连接不会关闭，但会触发任何相关的错误事件。
 
 [[peerdestroy]]
 == peer.destroy `METHOD`
@@ -299,7 +299,7 @@ peer.reconnect();
 peer.destroy();
 ----
 
-关闭与服务器的连接并终止所有现有连接。<<peerdestroyed,peer.destroyed>>将被设置为 `true`。
+关闭与服务器的连接并终止所有现有连接。`<<peerdestroyed,peer.destroyed>>` 将被设置为 `true`。
 
 IMPORTANT: 此操作不可撤销；相应的对等对象将不再能够创建或接收任何连接，其在（云）服务器上的ID将被没收，并且其所有数据和媒体连接都将被关闭。
 
@@ -328,7 +328,7 @@ NOTE: 我们建议您自己跟踪连接，而不是依赖此哈希表。
 [[dataconnection]]
 == DataConnection `CLASS`
 
-封装了WebRTC的DataChannel。要获取一个DataConnection对象，请使用<<peerconnect,peer.connect>>或监听<<peeron-connect,connect>>事件。
+封装了WebRTC的DataChannel。要获取一个DataConnection对象，请使用``<<peerconnect,peer.connect>>``或监听``<<peeron-connection,connect>>``事件。
 
 [[dataconnection-send]]
 === .send `METHOD`
@@ -449,7 +449,7 @@ dataConnection.on('error', function(err) { ... });
 [[mediaconnection]]
 == MediaConnection `CLASS`
 
-封装WebRTC的媒体流。要获取一个，请使用<<peercall,peer.call>>或监听<<peeron-call,call>>事件。
+封装WebRTC的媒体流。要获取一个，请使用``<<peercall,peer.call>>``或监听``<<peeron-call,call>>``事件。
 
 [[mediaconnection-answer]]
 === .answer `METHOD`
@@ -458,12 +458,12 @@ dataConnection.on('error', function(err) { ... });
 mediaConnection.answer([stream],[options]);
 ----
 
-当在对等体上接收到<<peeron-call,call>>事件时，可以调用回调提供的媒体连接上的 `.answer` 来接受呼叫，并可选地发送自己的媒体流。
+当在对等体上接收到``<<peeron-call,call>>``事件时，可以调用回调提供的媒体连接上的 `.answer` 来接受呼叫，并可选地发送自己的媒体流。
 
 [[mediaconnection-answer-stream]]
 ==== stream `MEDIASTREAM`
 
-来自 link:{moz_getUserMedia_url}[getUserMedia]的WebRTC媒体流。
+来自 ``link:{moz_getUserMedia_url}[getUserMedia]``的WebRTC媒体流。
 
 [[mediaconnection-answer-options]]
 ==== options `OBJECT`
@@ -498,7 +498,7 @@ mediaConnection.on(event, callback);
 mediaConnection.on('stream', function(stream) { ... });
 ----
 
-当远程对等体添加流时触发。
+当远程对等体添加 `stream` 时触发。
 
 [[mediaconnection-on-close]]
 ==== 'close' `EVENT`
@@ -534,7 +534,7 @@ mediaConnection.on('error', function(err) { ... });
 [[mediaconnection-type]]
 === .type `STRING`
 
-对于媒体连接，此值始终为 `'media'`。
+对于媒体连接，此值始终为 ``'media'``。
 
 [[util]]
 == util `OBJECT` `UTILITY`
@@ -543,6 +543,7 @@ mediaConnection.on('error', function(err) { ... });
 
 IMPORTANT: 仅文档中记录的工具保证存在于``util``中。未记录的工具可能会在不发出警告的情况下被移除。我们并不认为这些是“重大更改”。
 
+[[util-browser]]
 === .browser `STRING`
 
 ----
@@ -551,6 +552,7 @@ if (util.browser === 'Firefox') { /* 可以与Firefox对等方对等。 */ }
 
 当前浏览器。`util.browser` 当前可以有以下值：'firefox'、'chrome'、'safari'、'edge'、'不受支持的浏览器。'、'不是浏览器。'（未知的WebRTC兼容代理）。
 
+[[util-supports]]
 === .supports `OBJECT`
 
 ----
@@ -561,18 +563,22 @@ WebRTC功能到布尔值的哈希，这些布尔值对应于当前浏览器是�
 
 IMPORTANT: 仅文档中记录的属性保证存在于``util.supports``中。
 
+[[util-supports-audiovideo]]
 ==== .audioVideo `BOOLEAN`
 
 如果当前浏览器支持媒体流和对等连接，则为true。
 
+[[util-supports-data]]
 ==== .data `BOOLEAN`
 
 如果当前浏览器支持DataChannel和对等连接，则为true。
 
+[[util-supports-binary]]
 ==== .binary `BOOLEAN`
 
 如果当前浏览器支持二进制DataChannels，则为true。
 
+[[util-supports-reliable]]
 ==== .reliable `BOOLEAN`
 
 如果当前浏览器支持可靠DataChannels，则为true。

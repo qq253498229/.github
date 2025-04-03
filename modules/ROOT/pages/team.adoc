@@ -1,0 +1,19 @@
+= 团队信息
+
+我们对WebRTC和浏览器中的对等通信（peer-to-peer communication）比对其他技术更感兴趣。
+
+== 米歇尔·布（Michelle Bu）
+
+https://github.com/michelle
+
+我主要构建一些愚蠢的JavaScript网络应用程序。我正在研究这个JavaScript库，这样我就可以构建更多的愚蠢JavaScript网络应用程序了。
+
+== 埃里克·张（Eric Zhang）
+
+https://github.com/ericz
+
+我不想说谎，我沉迷于编写JavaScript库。
+
+请阻止我。
+
+我之前创建过 link:https://github.com/binaryjs/binaryjs[BinaryJS]，在此之前，我是Y Combinator初创公司Flotype的创始人，你猜到了，我创建的是JavaScript（以及其他）库。
