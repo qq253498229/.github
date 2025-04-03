@@ -1,5 +1,5 @@
 site:
-  title: docs-peerjs
+  title: PEER JS
   start_page: docs-peerjs::index.adoc
 content:
   sources:
