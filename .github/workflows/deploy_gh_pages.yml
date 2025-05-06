@@ -5,7 +5,7 @@ on:
       - '!**'
       - 'modules/**'
       - 'ui-bundle/**'
-      - '.github/**'
+      - '.github/**/*'
       - 'antora.yml'
       - 'antora-playbook.yml'
       - 'package.json'
